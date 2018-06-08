@@ -3,9 +3,9 @@
 """
 Input files must be fastas and in the format genus_species_formatted_CDS.fasta eg. Arabidopsis_thaliana_formatted_CDS.fasta
 How to input a command:
-python CodonMuSe.py -f Genus_species.fasta -tscan Genus_species_tRNAscan.txt -tc 1 -ind -Mb gw -par
+python CodonMuSe.py -f Genus_species.fasta -tscan Genus_species_tRNAscan.txt -tc 1 -ind -GC gw -par
 If you have a tRNAscan you can include it as the second input of the command (as above). With or without the tRNAscan file you can also run
-the script on individual genes (include the command -ind) with or without fixing the mutation_bias of each gene to the global mutation bias (from the formatted_CDS file) by adding -Mb gw.
+the script on individual genes (include the command -ind) with or without fixing the GC content of each gene to the global GC content (from the formatted_CDS file) by adding -GC gw.
 """
 import glob
 import sys
@@ -38,13 +38,13 @@ else:
 	print "  -ind          Analysed individual genes in addition to a genomewide analysis"
 	print "  -par          Determine cost and efficiency optimality of individual genes"
 	print "  -trade        Calculates trade-off between cost and efficiency"
-	print "  -Mb <float>   Specify a fixed value for Mb in all calculations"
+	print "  -GC <float>   Specify a fixed value for GC in all calculations"
 	print "  -Sc <float>   Specify a fixed value for Sc in all calculations"
 	print "  -St <float>   Specify a fixed value for Sc in all calculations"
-	print "  -Mb gw        Fix Mb to genome-wide value for individual genes"
+	print "  -GC gw        Fix GC to genome-wide value for individual genes"
 	print "  -Sc gw        Fix Sc to genome-wide value for individual genes"
 	print "  -St gw        Fix St to genome-wide value for individual genes"
-	print "  -m <TXT>      Specify model parameters (Mb, Sc, St) eg. Mb_Sc_St or Mb_Sc"
+	print "  -m <TXT>      Specify model parameters (GC, Sc, St) eg. GC_Sc_St or GC_Sc"
 	print "                (Default = determine best parameter combination automatically)\n"
 	print "Citation:";
 	print "CodonMuSe (1) implements the SK model (2)."
