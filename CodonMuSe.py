@@ -198,12 +198,12 @@ def Genome_wide_analysis(CDS_file):
 		probability = math.log(probability)
 		log_likelihood = log_likelihood + probability*codon_count[codon]
 	final_log_likelihood = "%.2f" %(log_likelihood)
-	#Mutation_bias = Mb	Nitrogen Selection = Sc		Translational Efficiency = St		Energy selection = Es
+	#GC_content = GC	Nitrogen Selection = Sc		Translational Efficiency = St		Energy selection = Es
 	try:
 		tRNA_count, bad_tRNAs = get_tAI_values(tSCAN_file)
-		Options = ['Mb', 'Sc', 'St']
+		Options = ['GC', 'Sc', 'St']
 	except NameError:
-		Options = ['Mb', 'Sc']
+		Options = ['GC', 'Sc']
 	print "Analysing whole genome sequence data (<1 min)"
 	if model_fix == "find":
 		print "Finding best model to use for this data set\nModel\t\t-LnL\tdf\tAIC\tBIC"
@@ -266,23 +266,23 @@ def Genome_wide_analysis(CDS_file):
 		model_used = best.replace("_", "+")
 		print "%s is the best fitting model" %(model_used)
 	else:
-		if 'Mb' in model_fix and 'Sc' in model_fix and 'St' in model_fix:
+		if 'GC' in model_fix and 'Sc' in model_fix and 'St' in model_fix:
 			number_para = 3
-			best = 'Mb_Sc_St'
-		elif 'Mb' in model_fix and 'Sc' in model_fix:
+			best = 'GC_Sc_St'
+		elif 'GC' in model_fix and 'Sc' in model_fix:
 			number_para = 2
-			best = 'Mb_Sc'
-		elif 'Mb' in model_fix and 'St' in model_fix:
+			best = 'GC_Sc'
+		elif 'GC' in model_fix and 'St' in model_fix:
 			number_para = 2
-			best = 'Mb_St'
+			best = 'GC_St'
 		elif 'St' in model_fix and 'Sc' in model_fix:
 			number_para = 2
 			best = 'Sc_St'
-		elif 'Mb' in model_fix or 'Sc' in model_fix or 'St' in model_fix:
+		elif 'GC' in model_fix or 'Sc' in model_fix or 'St' in model_fix:
 			number_para = 1
 			best = model_fix.replace("_", "")
 		else:
-			print "Please input the specified model using the options Mb Sc St separated by _\neg. Mb_Sc_St or Mb_St or Mb etc."
+			print "Please input the specified model using the options GC Sc St separated by _\neg. GC_Sc_St or GC_St or GC etc."
 		print "\nYou have specified model %s which has %d input(s).\n" %(best, number_para)
 		best_res, best_log_likelihood, best_r2 = get_math_function(best, 0, 0, 0)
 		AIC = (2*number_para)-(2*(best_log_likelihood))
@@ -290,7 +290,7 @@ def Genome_wide_analysis(CDS_file):
 	AIC = round(AIC, 1)
 	best_log_likelihood = round(best_log_likelihood, 1)
 	model_used = best.replace("_", "+")
-	f1.write("\nGenome-wide Results Summary:\nLnL = "+str(best_log_likelihood)+"\nAIC = "+str(AIC)+"\nR2 = "+str(best_r2)+"\nMutation bias (Mb) = "+str(best_res[0])+"\nSelection on cost (Sc) = "+str(best_res[1])+"\nSelection on translational efficiency (St) = "+str(best_res[2])+"\nModel used = "+model_used+"\n\n")
+	f1.write("\nGenome-wide Results Summary:\nLnL = "+str(best_log_likelihood)+"\nAIC = "+str(AIC)+"\nR2 = "+str(best_r2)+"\nGC content (GC) = "+str(best_res[0])+"\nSelection on cost (Sc) = "+str(best_res[1])+"\nSelection on translational efficiency (St) = "+str(best_res[2])+"\nModel used = "+model_used+"\n\n")
 	f1.write("Amino acid\tCodon\tObserved frequency\tFitted frequency\n")
 	for aa in proteins:
 		if aa != 'B':
@@ -304,13 +304,13 @@ def Genome_wide_analysis(CDS_file):
 	f2.close()
 	print "\n%d Sequences containing %d codons were analysed\n%d Sequences excluded (details in *_excluded_sequences.txt)" %(sequence_count, total_codons, bad_sequence_count)
 	print "\n%d tRNAs were used\n%d tRNAs excluded (details in *_tRNAscan_errors.txt)\n" %(tRNA_count, bad_tRNAs)
-	print "Results Summary:\nLn_L = %d\nAIC =\t%d\nR2 =\t%s (excluding amino acids with only one codon)\nMb =\t%s\nSc =\t%s\nSt =\t%s\nModel = %s\n" %(best_log_likelihood, AIC, str(best_r2), str(best_res[0]), str(best_res[1]), str(best_res[2]), model_used)
+	print "Results Summary:\nLn_L = %d\nAIC =\t%d\nR2 =\t%s (excluding amino acids with only one codon)\nGC =\t%s\nSc =\t%s\nSt =\t%s\nModel = %s\n" %(best_log_likelihood, AIC, str(best_r2), str(best_res[0]), str(best_res[1]), str(best_res[2]), model_used)
 	return best, best_res[0], best_res[1], best_res[2]
 	
 def per_gene_analysis(best_model):
 	print "Analysing individual genes. This takes ~ 1 second per gene.\n"
 	f1=open(species+"_IndividualGenesResults.txt", "w")
-	f1.write("Accession\tLog_likelihood\tMb\tSc\tSt")
+	f1.write("Accession\tLog_likelihood\tGC\tSc\tSt")
 	try:
 		get_tAI_values(tSCAN_file)
 	except NameError:
@@ -357,10 +357,10 @@ def per_gene_analysis(best_model):
 		f1.write("\n"+acc+"\t"+str(likelihood_model)+"\t"+str(res_model[0])+"\t"+str(res_model[1])+"\t"+str(res_model[2]))
 	f1.close()
 
-def get_math_function(model_type, start_Mb, start_Ns, start_Te):
-	equati = write_equation(model_type, Mb_to_use, Sc_to_use, St_to_use)
+def get_math_function(model_type, start_GC, start_Ns, start_Te):
+	equati = write_equation(model_type, GC_to_use, Sc_to_use, St_to_use)
 	def equation_real(x):
-		Mb, Sc, St = x
+		GC, Sc, St = x
 		try:
 			return eval(equati)
 		except OverflowError:
@@ -369,13 +369,13 @@ def get_math_function(model_type, start_Mb, start_Ns, start_Te):
 			return 10000000000000000000
 		except ValueError:
 			return 10000000000000000000
-	x0 = np.asarray((start_Mb, start_Ns, start_Te))
+	x0 = np.asarray((start_GC, start_Ns, start_Te))
 	result_parameters = optimize.fmin(equation_real, x0, disp=False)
-	if 'Mb' in model_type:
-		if Mb_to_use == 'Mb':
+	if 'GC' in model_type:
+		if GC_to_use == 'GC':
 			result_parameters[0] = round(result_parameters[0], 4)
 		else:
-			result_parameters[0] = Mb_to_use
+			result_parameters[0] = GC_to_use
 	else:
 		result_parameters[0] = 0
 	if 'Sc' in model_type:
@@ -397,7 +397,7 @@ def get_math_function(model_type, start_Mb, start_Ns, start_Te):
 	return result_parameters, result_log_likelihood, r2_value
 
 def get_r2_value(x, model_type):
-	Mb = x[0]
+	GC = x[0]
 	Sc= x[1]
 	St = x[2]
 	top_line = 0
@@ -405,12 +405,12 @@ def get_r2_value(x, model_type):
 	mean = 0
 	number_codons_used = 0
 	for codon in relative_codon_use:
-		probability_codon = get_probability_codon(codon, model_type, Mb, Sc, St)
+		probability_codon = get_probability_codon(codon, model_type, GC, Sc, St)
 		mean = mean + probability_codon
 		number_codons_used = number_codons_used + 1
 	mean = mean/number_codons_used
 	for codon in relative_codon_use:
-		probability_codon = get_probability_codon(codon, model_type, Mb, Sc, St)
+		probability_codon = get_probability_codon(codon, model_type, GC, Sc, St)
 		relative_codon = float(relative_codon_use[codon])
 		value = probability_codon - relative_codon
 		value = value*value
@@ -421,7 +421,7 @@ def get_r2_value(x, model_type):
 	top_over_bottom = float(top_line)/bottom_line
 	return (1-top_over_bottom)
 	
-def get_probability_codon(input_codon, model_type, Mb, Sc, St):
+def get_probability_codon(input_codon, model_type, GC, Sc, St):
 	prot = codon_trans_standard[input_codon]
 	largest_value = 0
 	for syn in proteins[prot]:
@@ -436,7 +436,7 @@ def get_probability_codon(input_codon, model_type, Mb, Sc, St):
 	for parameter in parameters:
 		number_parameters -= 1
 		for syn in proteins[prot]:
-			additional = get_upper_equation(syn, parameter, Mb, Sc, St, 'for_probability', 'off')
+			additional = get_upper_equation(syn, parameter, GC, Sc, St, 'for_probability', 'off')
 			upper[syn] = upper[syn]+additional
 			if number_parameters == 0:
 				upper[syn] = upper[syn][:len(upper[syn])-1]
@@ -453,17 +453,17 @@ def get_probability_codon(input_codon, model_type, Mb, Sc, St):
 		else:
 			return to_be_logged
 
-def get_upper_equation(codon, parameter, Mb, Sc, St, equation_type, shuffle_type):
+def get_upper_equation(codon, parameter, GC, Sc, St, equation_type, shuffle_type):
 	if equation_type == "for_probability":
-		Mb = '%.6f'%Mb
+		GC = '%.6f'%GC
 		Sc = '%.6f'%Sc
 		St = '%.6f'%St
-	if parameter == 'Mb':
+	if parameter == 'GC':
 		if shuffle_type == 'off':
 			GC_codon = '%.4f'%(GC_unshuffled[codon])
 		else:
 			GC_codon = '%.4f'%(GC_shuffled[codon])
-		return "(math.exp("+str(Mb)+"*"+GC_codon+"))*"
+		return "(math.exp("+str(GC)+"*"+GC_codon+"))*"
 	elif parameter == 'Sc':
 		if shuffle_type == 'off':
 			Nitrogen_selection = '%.4f'%(Nitrogen_selection_unshuffled[codon])
@@ -477,15 +477,15 @@ def get_upper_equation(codon, parameter, Mb, Sc, St, equation_type, shuffle_type
 			val = '%.4f'%(tAI_shuffled[codon] - largest_value[codon_trans_standard[codon]])
 		return "(math.exp("+str(St)+"*"+val+"))*"
 	else:
-		print "%s is not a recognised parameter\nOnly Mb, Sc and St are recognised parameters\n\n" %parameter
+		print "%s is not a recognised parameter\nOnly GC, Sc and St are recognised parameters\n\n" %parameter
 
-def get_p_value(shuffle_type, real_likelihood, accuracy, Mb_in, Ns_in, Te_in): #
+def get_p_value(shuffle_type, real_likelihood, accuracy, GC_in, Ns_in, Te_in): #
 	counter = 1
 	better_shuffled = 0
 	while counter <= accuracy:
 		shuf_equat = write_equation(shuffle_type)
 		def equation_shuffle(x):
-			Mb, Sc, St = x
+			GC, Sc, St = x
 			try:
 				return eval(shuf_equat)
 			except OverflowError:
@@ -494,7 +494,7 @@ def get_p_value(shuffle_type, real_likelihood, accuracy, Mb_in, Ns_in, Te_in): #
 				return 10000000000000000000
 			except ValueError:
 				return 10000000000000000000
-		x0 = np.asarray((Mb_in, Ns_in, Te_in))
+		x0 = np.asarray((GC_in, Ns_in, Te_in))
 		res_shuf = optimize.fmin(equation_shuffle, x0, disp=False)
 		likelihood = equation_shuffle(res_shuf)
 		if likelihood <= real_likelihood:
@@ -503,7 +503,7 @@ def get_p_value(shuffle_type, real_likelihood, accuracy, Mb_in, Ns_in, Te_in): #
 	p_value = '%.2f'%(float(better_shuffled)/accuracy) #change this to %.3f if you change accuracy to 1000
 	return p_value
 
-def write_equation(model_type, Mb, Sc, St):
+def write_equation(model_type, GC, Sc, St):
 	global GC_unshuffled
 	global Nitrogen_selection_unshuffled
 	GC_unshuffled = {}
@@ -546,9 +546,9 @@ def write_equation(model_type, Mb, Sc, St):
 		else:
 			for codon in alphabetic_codons:
 				if shuffle == 'off':
-					additional = get_upper_equation(codon, parameter, Mb, Sc, St, 'for_real', 'off')
+					additional = get_upper_equation(codon, parameter, GC, Sc, St, 'for_real', 'off')
 				else:
-					additional = get_upper_equation(codon, parameter, Mb, Sc, St, 'for_shuffle', 'on')
+					additional = get_upper_equation(codon, parameter, GC, Sc, St, 'for_shuffle', 'on')
 				upper[codon] = upper[codon]+additional
 				if number_parameters == 0:
 					upper[codon] = upper[codon][:len(upper[codon])-1]
@@ -563,7 +563,7 @@ def write_equation(model_type, Mb, Sc, St):
 		if model_type == "St" and prot == 'B':
 			str = str+" + "
 		else:
-			Mb = 0.1
+			GC = 0.1
 			St = 0.1
 			Sc = 0.1
 			to_be_logged = eval(upper[codon]+"/"+base)
@@ -829,20 +829,20 @@ def run_pareto_optimisation():
 		f1.write(acc+"\t"+str(Both_optimised)+"\t"+str(Cost_optimised)+"\t"+str(tAI_optimised)+"\n")
 	f1.close()
 
-global Mb_to_use
+global GC_to_use
 global Sc_to_use
 global St_to_use
-Mb_to_use = 'Mb'
+GC_to_use = 'GC'
 Sc_to_use = 'Sc'
 St_to_use = 'St'
-if "-Mb" in sys.argv:
-	Mb_index = command_line.index("-Mb") + 1
-	Mb_specified = sys.argv[Mb_index]
-	if Mb_specified != "gw":
-		Mb_specified = float(Mb_specified)
-		Mb_to_use = Mb_specified
+if "-GC" in sys.argv:
+	GC_index = command_line.index("-GC") + 1
+	GC_specified = sys.argv[GC_index]
+	if GC_specified != "gw":
+		GC_specified = float(GC_specified)
+		GC_to_use = GC_specified
 else:
-	Mb_specified = "No"
+	GC_specified = "No"
 if "-Sc" in sys.argv:
 	Sc_index = command_line.index("-Sc") + 1
 	Sc_specified = sys.argv[Sc_index]
@@ -860,7 +860,7 @@ if "-St" in sys.argv:
 else:
 	St_specified = "No"
 
-model_to_use, Mb_gw, Sc_gw, St_gw = Genome_wide_analysis(CDS_file)
+model_to_use, GC_gw, Sc_gw, St_gw = Genome_wide_analysis(CDS_file)
 
 if Sc_specified == "gw":
 	Sc_to_use = Sc_gw
@@ -870,15 +870,15 @@ if St_specified == "gw":
 	print "\nSt fixed to the genome-wide St (%d) for individual gene analysis." %(St_gw)
 
 if "-ind" in sys.argv:
-	if Mb_specified == "No":
-		Mb_to_use = 'Mb'
-		print "\nMutaiton bias not fixed for individual genes.\nI would not recommend this.\nadd -Mb gw to command line to run with genome-wide Mb values\n"
-	elif Mb_specified == "gw":
-		Mb_to_use = Mb_gw
-		print "\nMutaiton bias fixed to the genome-wide Mb (%f) for individual gene analysis." %(Mb_gw)
+	if GC_specified == "No":
+		GC_to_use = 'GC'
+		print "\nMutaiton bias not fixed for individual genes.\nI would not recommend this.\nadd -GC gw to command line to run with genome-wide GC values\n"
+	elif GC_specified == "gw":
+		GC_to_use = GC_gw
+		print "\nMutaiton bias fixed to the genome-wide GC (%f) for individual gene analysis." %(GC_gw)
 	else:
-		Mb_to_use = Mb_specified
-		print "\nMutaiton bias fixed to %f for individual gene analysis.\n" % (Mb_specified)
+		GC_to_use = GC_specified
+		print "\nMutaiton bias fixed to %f for individual gene analysis.\n" % (GC_specified)
 	per_gene_analysis(model_to_use)
 if "-par" in sys.argv:
 	run_pareto_optimisation()
