@@ -872,13 +872,13 @@ if St_specified == "gw":
 if "-ind" in sys.argv:
 	if GC_specified == "No":
 		GC_to_use = 'GC'
-		print "\nMutaiton bias not fixed for individual genes.\nI would not recommend this.\nadd -GC gw to command line to run with genome-wide GC values\n"
+		print "\nGC content not fixed for individual genes.\nI would not recommend this.\nadd -GC gw to command line to run with genome-wide GC values\n"
 	elif GC_specified == "gw":
 		GC_to_use = GC_gw
-		print "\nMutaiton bias fixed to the genome-wide GC (%f) for individual gene analysis." %(GC_gw)
+		print "\nGC content fixed to the genome-wide GC (%f) for individual gene analysis." %(GC_gw)
 	else:
 		GC_to_use = GC_specified
-		print "\nMutaiton bias fixed to %f for individual gene analysis.\n" % (GC_specified)
+		print "\nGC content fixed to %f for individual gene analysis.\n" % (GC_specified)
 	per_gene_analysis(model_to_use)
 if "-par" in sys.argv:
 	run_pareto_optimisation()
